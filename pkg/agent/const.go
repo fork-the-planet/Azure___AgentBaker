@@ -90,13 +90,8 @@ const (
 	dhcpv6SystemdService      = "linux/cloud-init/artifacts/dhcpv6.service"
 	dhcpv6ConfigurationScript = "linux/cloud-init/artifacts/enable-dhcpv6.sh"
 
-	// scripts for initializing specifically within AKS stack cloud environments (AGC).
-	initAKSCustomCloudScript        = "linux/cloud-init/artifacts/init-aks-custom-cloud.sh"
-	initAKSCustomCloudMarinerScript = "linux/cloud-init/artifacts/init-aks-custom-cloud-mariner.sh"
-
-	// scripts for initializing specifically within AKS custom cloud environments other than stack cloud (e.g. Bleu).
-	initAKSCustomCloudOperationRequestsScript        = "linux/cloud-init/artifacts/init-aks-custom-cloud-operation-requests.sh"
-	initAKSCustomCloudOperationRequestsMarinerScript = "linux/cloud-init/artifacts/init-aks-custom-cloud-operation-requests-mariner.sh"
+	// script for initializing AKS custom cloud environment.
+	initAKSCustomCloudScript = "linux/cloud-init/artifacts/init-aks-custom-cloud.sh"
 
 	ensureNoDupEbtablesScript  = "linux/cloud-init/artifacts/ensure-no-dup.sh"
 	ensureNoDupEbtablesService = "linux/cloud-init/artifacts/ensure-no-dup.service"
@@ -110,16 +105,15 @@ const (
 
 // cloud-init destination file references.
 const (
-	cseHelpersScriptFilepath                    = "/opt/azure/containers/provision_source.sh"
-	cseHelpersScriptDistroFilepath              = "/opt/azure/containers/provision_source_distro.sh"
-	cseInstallScriptFilepath                    = "/opt/azure/containers/provision_installs.sh"
-	cseInstallScriptDistroFilepath              = "/opt/azure/containers/provision_installs_distro.sh"
-	cseConfigScriptFilepath                     = "/opt/azure/containers/provision_configs.sh"
-	customSearchDomainsCSEScriptFilepath        = "/opt/azure/containers/setup-custom-search-domains.sh"
-	dhcpV6ServiceCSEScriptFilepath              = "/etc/systemd/system/dhcpv6.service"
-	dhcpV6ConfigCSEScriptFilepath               = "/opt/azure/containers/enable-dhcpv6.sh"
-	initAKSCustomCloudFilepath                  = "/opt/azure/containers/init-aks-custom-cloud.sh"
-	initAKSCustomCloudOperationRequestsFilepath = "/opt/azure/containers/init-aks-custom-cloud-operation-requests.sh"
+	cseHelpersScriptFilepath             = "/opt/azure/containers/provision_source.sh"
+	cseHelpersScriptDistroFilepath       = "/opt/azure/containers/provision_source_distro.sh"
+	cseInstallScriptFilepath             = "/opt/azure/containers/provision_installs.sh"
+	cseInstallScriptDistroFilepath       = "/opt/azure/containers/provision_installs_distro.sh"
+	cseConfigScriptFilepath              = "/opt/azure/containers/provision_configs.sh"
+	customSearchDomainsCSEScriptFilepath = "/opt/azure/containers/setup-custom-search-domains.sh"
+	dhcpV6ServiceCSEScriptFilepath       = "/etc/systemd/system/dhcpv6.service"
+	dhcpV6ConfigCSEScriptFilepath        = "/opt/azure/containers/enable-dhcpv6.sh"
+	initAKSCustomCloudFilepath           = "/opt/azure/containers/init-aks-custom-cloud.sh"
 )
 
 const (
