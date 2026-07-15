@@ -11,6 +11,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"text/template"
@@ -130,6 +132,14 @@ func (t *TemplateGenerator) getScriptlessNBCCustomData(config *datamodel.NodeBoo
 		encodedHotfixJSON = getBase64EncodedGzippedCustomScriptFromStr(string(b))
 	}
 
+	// enabledFeaturesFile is dropped only when at least one feature toggle is set. Its KEY=VALUE
+	// contents are read by the aks-node-controller wrapper (FEATURES_PATH). Empty content =>
+	// skipped by buildScriptlessCustomData, keeping custom data byte-identical when no toggle is set.
+	var encodedEnabledFeatures string
+	if content := renderEnabledFeatures(config.EnabledFeatures); content != "" {
+		encodedEnabledFeatures = getBase64EncodedGzippedCustomScriptFromStr(content)
+	}
+
 	// Use an ordered slice (not a map) so the rendered customData is deterministic
 	// across runs/tests instead of depending on Go's randomized map iteration order.
 	encodedFiles := []struct {
@@ -140,6 +150,7 @@ func (t *TemplateGenerator) getScriptlessNBCCustomData(config *datamodel.NodeBoo
 		{aksNodeCustomDataFilepath, encodedNodeCustomData},
 		{aksNodeConfigFilepath, encodedAKSNodeConfig},
 		{aksHotfixJSONFilepath, encodedHotfixJSON},
+		{enabledFeaturesFilepath, encodedEnabledFeatures},
 	}
 
 	var customData string
@@ -150,6 +161,39 @@ func (t *TemplateGenerator) getScriptlessNBCCustomData(config *datamodel.NodeBoo
 	}
 
 	return base64.StdEncoding.EncodeToString([]byte(customData))
+}
+
+// renderEnabledFeatures serializes the feature toggle map into sorted KEY=VALUE lines for
+// enabled_features.sh. Keys are sorted so the output is deterministic (Go map iteration is
+// randomized) and filtered to valid shell identifiers - the same set the aks-node-controller
+// wrapper accepts. Entries whose value contains a newline or carriage return are dropped so a
+// single map entry can never expand into multiple lines (preserving the one-KEY=VALUE-per-line
+// contract). Returns "" when no valid entry remains so custom data stays byte-identical to today.
+func renderEnabledFeatures(features map[string]string) string {
+	keys := make([]string, 0, len(features))
+	for k, v := range features {
+		if isValidFeatureKey(k) && !strings.ContainsAny(v, "\n\r") {
+			keys = append(keys, k)
+		}
+	}
+	if len(keys) == 0 {
+		return ""
+	}
+	sort.Strings(keys)
+	var b strings.Builder
+	for _, k := range keys {
+		fmt.Fprintf(&b, "%s=%s\n", k, features[k])
+	}
+	return b.String()
+}
+
+// featureKeyRe matches a valid shell identifier ([a-zA-Z_][a-zA-Z0-9_]*) - the same set the
+// aks-node-controller wrapper parses out of enabled_features.sh.
+var featureKeyRe = regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*$`)
+
+// isValidFeatureKey reports whether k is a valid shell identifier the wrapper would accept.
+func isValidFeatureKey(k string) bool {
+	return featureKeyRe.MatchString(k)
 }
 
 func buildScriptlessCustomData(cloudInitTemplate, fileListTemplate, separator string, encodedFiles []struct {
