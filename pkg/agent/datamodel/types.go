@@ -338,6 +338,10 @@ func (d Distro) IsAzureLinuxOSGuardDistro() bool {
 	return slices.Contains(AvailableAzureLinuxOSGuardDistros, d)
 }
 
+func (d Distro) IsAzureLinuxV3Distro() bool {
+	return slices.Contains(AvailableAzureLinuxV3Distros, d)
+}
+
 /*
 KeyvaultSecretRef specifies path to the Azure keyvault along with secret name and (optionaly) version
 for Service Principal's secret.
@@ -1190,6 +1194,13 @@ func (a *AgentPoolProfile) Is2404VHDDistro() bool {
 // Is2604VHDDistro returns true if the distro uses 2604 VHD.
 func (a *AgentPoolProfile) Is2604VHDDistro() bool {
 	return a.Distro.Is2604VHDDistro()
+}
+
+func (a *AgentPoolProfile) IsContainerdV2Distro() bool {
+	if a.Distro.IsKataDistro() {
+		return false
+	}
+	return a.Distro.Is2404VHDDistro() || a.Distro.IsACLDistro() || a.Distro.IsAzureLinuxV3Distro()
 }
 
 // IsAzureLinuxCgroupV2VHDDistro returns true if the distro uses Azure Linux CgrpupV2 VHD.
